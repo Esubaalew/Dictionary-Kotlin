@@ -1,13 +1,13 @@
 package dictionary
-
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
 // Britannica.kt
 
 /**
  * Module for Britannica Dictionary
  */
 
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
+const val DOMAIN = "https://www.britannica.com"
 /**
  * Get Jsoup Document object for a URL
  *
@@ -22,3 +22,27 @@ fun getSoup(url: String): Document? {
         null
     }
 }
+
+/**
+ * Get related entries for a word in Britannica Dictionary
+ *
+ * @param word Word to search for
+ * @return List of dictionaries containing the text and link of each entry, or an empty list if no entries are found
+ */
+fun getEntries(word: String): List<Map<String, String>> {
+    val url = "$DOMAIN/dictionary/$word"
+    val soup = getSoup(url) ?: return emptyList()
+    val entries = soup.select("ul.o_list")
+
+    return if (entries.isNotEmpty()) {
+        entries[0].select("li").map { entry ->
+            mapOf(
+                "text" to entry.select("a").text().trim(),
+                "link" to "$DOMAIN${entry.select("a").attr("href")}"
+            )
+        }
+    } else {
+        emptyList()
+    }
+}
+
