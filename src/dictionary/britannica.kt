@@ -126,3 +126,45 @@ fun getParts(word: String): List<String>? {
 
     return partsOfSpeech
 }
+
+/**
+ * Extracts the definitions and examples from the Britannica Dictionary for a given word.
+ *
+ * @param word The word to fetch definitions for.
+ * @return List of dictionaries, where each dictionary contains a meaning and its examples.
+ *         Returns null if no definitions are found or if sense/examples are not found.
+ */
+fun getDefinitions(word: String): List<Map<String, Any>>? {
+    val url = "$DOMAIN/dictionary/$word"
+    val soup = getSoup(url) ?: return null
+
+    val sblocks = soup.select("div.sblocks")
+    val definitionsWithExamples = mutableListOf<Map<String, Any>>()
+
+    for (sblock in sblocks) {
+        val definitionBlocks = sblock.select("div.sblock_c")
+        for (block in definitionBlocks) {
+            val senses = block.select("div.sense")
+            for (sense in senses) {
+                val definitions = sense.select("span.def_text")
+                val examples = sense.select("li.vi")
+
+                if (definitions.isNotEmpty() && examples.isNotEmpty()) {
+                    val definitionExamplePairs = definitions.zip(examples)
+                    for ((definition, example) in definitionExamplePairs) {
+                        val meaning = definition.text().trim()
+                        val exampleList = examples.map { it.text().trim() }
+                        definitionsWithExamples.add(mapOf("meaning" to meaning, "examples" to exampleList))
+                    }
+                } else if (definitions.isNotEmpty()) {
+                    for (definition in definitions) {
+                        val meaning = definition.text().trim()
+                        definitionsWithExamples.add(mapOf("meaning" to meaning, "examples" to emptyList<String>()))
+                    }
+                }
+            }
+        }
+    }
+
+    return if (definitionsWithExamples.isNotEmpty()) definitionsWithExamples else null
+}
