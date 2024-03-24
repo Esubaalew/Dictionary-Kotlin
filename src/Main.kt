@@ -1,5 +1,6 @@
 import dictionary.getEntries
 import dictionary.getSoup
+import dictionary.getTotalEntries
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 
@@ -10,4 +11,5 @@ fun main() {
         println(entry["text"])
         println(entry["link"])
     }
+    println(getTotalEntries("head"))
 }

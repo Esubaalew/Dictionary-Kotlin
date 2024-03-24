@@ -46,3 +46,10 @@ fun getEntries(word: String): List<Map<String, String>> {
     }
 }
 
+/**
+ * Get total number of entries for a word in Britannica Dictionary
+ *
+ * @param word Word to search for
+ * @return Total number of entries for the word
+ */
+fun getTotalEntries(word: String): Int = getEntries(word).size
