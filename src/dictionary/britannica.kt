@@ -96,3 +96,33 @@ fun getWordOfTheDay(): Map<String, Any>? {
     return wordInfo
 }
 
+/**
+ * Get the parts of speech for a given word from the Britannica Dictionary.
+ *
+ * @param word The word to fetch parts of speech for.
+ * @return List of strings, with each string containing the headword and its part of speech.
+ */
+fun getParts(word: String): List<String>? {
+    val url = "$DOMAIN/dictionary/$word"
+    val soup = getSoup(url) ?: return null
+
+    val entries = soup.select("div.hw_d")?: return null
+
+    if (entries.isEmpty()) {
+        return emptyList()
+    }
+
+    val partsOfSpeech = mutableListOf<String>()
+
+    for (entry in entries) {
+        val headwordElement = entry.select("span.hw_txt").firstOrNull()
+        val partOfSpeechElement = entry.select("span.fl").firstOrNull()
+
+        val headword = headwordElement?.text()?.trim() ?: continue
+        val partOfSpeech = partOfSpeechElement?.text()?.trim() ?: continue
+
+        partsOfSpeech.add("$headword ($partOfSpeech)")
+    }
+
+    return partsOfSpeech
+}
