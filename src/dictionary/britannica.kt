@@ -166,5 +166,5 @@ fun getDefinitions(word: String): List<Map<String, Any>>? {
         }
     }
 
-    return if (definitionsWithExamples.isNotEmpty()) definitionsWithExamples else null
+    return definitionsWithExamples.ifEmpty { null }
 }
