@@ -53,3 +53,46 @@ fun getEntries(word: String): List<Map<String, String>> {
  * @return Total number of entries for the word
  */
 fun getTotalEntries(word: String): Int = getEntries(word).size
+
+/**
+ * Get the word of the day from Britannica Dictionary
+ *
+ * @return Dictionary containing the word, part of speech, image, and meaning information, or null if not found
+ */
+fun getWordOfTheDay(): Map<String, Any>? {
+    val url = "$DOMAIN/dictionary/eb/word-of-the-day"
+    val soup = getSoup(url) ?: return null
+
+    val wordContainer = soup.select("div.hw_d.box_sizing.ld_xs_hidden").firstOrNull()
+    val imageContainer = soup.select("div.wod_img_act").firstOrNull()
+    val meaningContainer = soup.select("div.midbs").firstOrNull()
+
+    val wordInfo = mutableMapOf<String, Any>()
+
+    wordContainer?.let {
+        val wordText = it.select("span.hw_txt").text().trim()
+        val partOfSpeech = it.select("span.fl").text().trim()
+        println(partOfSpeech)
+        wordInfo["word"] = "$wordText ($partOfSpeech)"
+    }
+
+    imageContainer?.let {
+        val image = it.select("img").firstOrNull()
+        val src = image?.attr("src") ?: ""
+        val alt = image?.attr("alt") ?: ""
+        wordInfo["image"] = mapOf("src" to src, "alt" to alt)
+    }
+
+    meaningContainer?.let {
+        val meanings = mutableListOf<Map<String, Any>>()
+        it.select("div.midb").forEach { block ->
+            val definition = block.select("div.midbt p").text()
+            val examples = block.select("li.vi").map { example -> example.text() }
+            meanings.add(mapOf("definition" to definition, "examples" to examples))
+        }
+        wordInfo["meanings"] = meanings
+    }
+
+    return wordInfo
+}
+
