@@ -2,5 +2,4 @@ import dictionary.*
 
 fun main() {
 
-
 }
